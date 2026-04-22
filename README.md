@@ -17,3 +17,6 @@ Modèle LLM embarqué proposant un chatbot dans un musée
 
 ## Idées : 
 petit modèle préentrainé + RAG (scrapping oeuvre d'un musée + pages wikipédia associés)
+
+## Musée : 
+Musée choisi est Louvre
