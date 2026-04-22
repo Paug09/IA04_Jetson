@@ -11,6 +11,7 @@ import logging
 import sys
 from pathlib import Path
 
+import requests as http_requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -62,7 +63,7 @@ def chat():
     try:
         result = pipeline.query(message, language=language, history=history)
         return jsonify(result)
-    except TimeoutError:
+    except (TimeoutError, http_requests.exceptions.ReadTimeout):
         return jsonify({
             "error": "ollama_timeout",
             "message": "Le modèle met trop de temps à répondre. Veuillez réessayer.",

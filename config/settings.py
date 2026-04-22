@@ -11,7 +11,8 @@ SYSTEM_PROMPT_PATH = BASE_DIR / "prompts" / "system_prompt.txt"
 
 # --- Models ---
 EMBEDDING_MODEL = "intfloat/multilingual-e5-small"
-OLLAMA_MODEL = "llama3.2:3b-instruct-q4_K_M"
+# OLLAMA_MODEL = "llama3.2:3b" # For final version with better performance
+OLLAMA_MODEL = "llama3.2:1b"  # For testing with smaller model
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
 # --- ChromaDB ---
@@ -30,7 +31,7 @@ MAX_HISTORY_TURNS = 3
 LLM_TEMPERATURE = 0.3
 LLM_NUM_CTX = 4096
 LLM_NUM_PREDICT = 512
-LLM_TIMEOUT_SECONDS = 60
+LLM_TIMEOUT_SECONDS = 300  # CPU inference is slow; increase if still timing out
 
 # --- Flask ---
 FLASK_HOST = "0.0.0.0"
