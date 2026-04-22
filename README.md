@@ -1,7 +1,11 @@
 # IA04_Jetson
 Modèle LLM embarqué proposant un chatbot dans un musée 
 
-## Consignes : 
+## Matériel
+
+- Jetson Orin Nano 8Go
+
+## Consignes
 **Pipeline global :**
 
 - Entrée : commentaire texte ou audio
