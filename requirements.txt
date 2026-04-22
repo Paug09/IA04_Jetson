@@ -1,0 +1,11 @@
+chromadb==0.5.23
+sentence-transformers==3.3.1
+# torch: on Jetson, install separately via NVIDIA JetPack wheel (see scripts/setup_ollama.sh)
+transformers==4.47.1
+flask==3.1.0
+flask-cors==5.0.0
+Wikipedia-API==0.7.1
+langdetect==1.0.9
+tqdm==4.67.1
+python-dotenv==1.0.1
+requests==2.32.3
