@@ -9,6 +9,13 @@ dependencies:
       - chromadb>=0.6.0
       - sentence-transformers>=3.3.1
       - transformers>=4.47.1
+      # STT (Whisper) extras
+      - accelerate>=1.2.0
+      - librosa>=0.10.2
+      # TTS playback + audio I/O for voice CLI
+      - scipy>=1.13.0
+      - sounddevice>=0.5.0
+      # Core API deps
       - flask==3.1.0
       - flask-cors==5.0.0
       - Wikipedia-API==0.7.1
