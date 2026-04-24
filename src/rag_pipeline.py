@@ -194,6 +194,8 @@ class RAGPipeline:
             fallback_title = meta["title_en"] if lang == "fr" else meta["title_fr"]
             display = title or fallback_title
             parts.append(f"[Source : {display}]\n{r['text']}")
+            log.info("  retrieved chunk: %s / %s (dist=%.3f)",
+                     meta["artwork_id"], meta["chunk_type"], r["distance"])
         return "\n\n".join(parts)
 
     def _build_prompt(self, context: str, question: str, history: list[dict]) -> str:

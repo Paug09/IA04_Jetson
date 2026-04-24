@@ -20,9 +20,9 @@ CHROMA_COLLECTION = "louvre_artworks"
 
 # --- RAG parameters ---
 TOP_K_RETRIEVAL = 5
-MAX_ARTWORKS_IN_CONTEXT = 3
+MAX_ARTWORKS_IN_CONTEXT = 2   # fewer artworks = less LLM confusion
 # Cosine distance threshold: chunks above this are considered irrelevant
-RELEVANCE_THRESHOLD = 0.45
+RELEVANCE_THRESHOLD = 0.35    # stricter = less noise in context
 
 # Number of past conversation turns to include in prompt
 MAX_HISTORY_TURNS = 3
@@ -44,11 +44,12 @@ LOUVRE_BASE_URL = "https://collections.louvre.fr"
 WIKIPEDIA_REST_URL = "https://{lang}.wikipedia.org/api/rest_v1/page/summary/{title}"
 
 # --- Speech-to-Text (Whisper) ---
-# tiny   = 39M params, ~150MB  → good for Jetson
-# base   = 74M params, ~290MB
-# small  = 244M params, ~970MB → too heavy for Jetson alongside LLM
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-tiny")
-WHISPER_LANGUAGE = None  # None = auto-detect; "fr" or "en" to force
+# tiny   = 39M params, ~150MB   → too weak for French, hallucinates
+# base   = 74M params, ~290MB   → good French/Jetson sweet spot
+# small  = 244M params, ~970MB  → best French, heavy on Jetson alongside LLM
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-base")
+# Force French since we're in a French museum; set to None for multilingual
+WHISPER_LANGUAGE = os.getenv("WHISPER_LANGUAGE", "fr")
 
 # --- Text-to-Speech (espeak-ng) ---
 TTS_RATE = 120          # words per minute — slow for retro MacinTalk feel
