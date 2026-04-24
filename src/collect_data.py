@@ -11,7 +11,6 @@ import sys
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote
 
 import requests
 
@@ -211,7 +210,7 @@ def _fetch_louvre_ark(ark: str, session: requests.Session) -> dict | None:
         if r.status_code == 200:
             return r.json()
         log.warning("ARK %s returned HTTP %d", ark, r.status_code)
-    except requests.RequestException as e:
+    except (requests.RequestException, json.JSONDecodeError) as e:
         log.warning("ARK %s fetch error: %s", ark, e)
     return None
 
@@ -226,7 +225,7 @@ def _search_louvre(query: str, session: requests.Session) -> str | None:
             results = data.get("results", [])
             if results:
                 return results[0].get("ark")
-    except requests.RequestException as e:
+    except (requests.RequestException, json.JSONDecodeError) as e:
         log.warning("Louvre search for '%s' failed: %s", query, e)
     return None
 
