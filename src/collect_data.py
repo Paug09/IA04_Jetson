@@ -155,6 +155,16 @@ ARTWORKS = {
     },
 }
 
+# Museum-level overview — no Louvre ARK (not an artwork), Wikipedia only.
+# Allows the chatbot to answer general questions about the Louvre itself.
+MUSEUM_OVERVIEW = {
+    "id": "louvre_museum",
+    "title_fr": "Musée du Louvre",
+    "title_en": "Louvre Museum",
+    "wikipedia": {"fr": "Musée_du_Louvre", "en": "Louvre"},
+    "louvre_url": "https://www.louvre.fr",
+}
+
 
 # ---------------------------------------------------------------------------
 # JSON-LD helpers
@@ -289,6 +299,42 @@ def _fetch_wikipedia_summary(title: str, lang: str, session: requests.Session) -
 
 
 # ---------------------------------------------------------------------------
+# Museum overview collector
+# ---------------------------------------------------------------------------
+
+def _collect_museum_overview(session: requests.Session) -> dict:
+    """Builds a museum-level record from Wikipedia (no Louvre API call)."""
+    log.info("Collecting: louvre_museum (Wikipedia only)")
+    meta = MUSEUM_OVERVIEW
+    record = {
+        "id": meta["id"],
+        "title_fr": meta["title_fr"],
+        "title_en": meta["title_en"],
+        "ark": "",
+        "louvre_url": meta["louvre_url"],
+        "artist": "",
+        "date": "",
+        "technique": "",
+        "dimensions": "",
+        "department": "Musée du Louvre",
+        "location": "Palais du Louvre, 75001 Paris",
+        "school": "",
+        "period": "",
+        "inventory_number": "",
+        "acquisition": "",
+        "louvre_description_fr": "",
+        "louvre_description_en": "",
+    }
+    wiki = meta["wikipedia"]
+    record["wikipedia_summary_fr"] = _fetch_wikipedia_summary(wiki["fr"], "fr", session)
+    time.sleep(REQUEST_DELAY_SECONDS)
+    record["wikipedia_summary_en"] = _fetch_wikipedia_summary(wiki["en"], "en", session)
+    time.sleep(REQUEST_DELAY_SECONDS)
+    log.info("  ✓ done")
+    return record
+
+
+# ---------------------------------------------------------------------------
 # Main collection loop
 # ---------------------------------------------------------------------------
 
@@ -298,6 +344,9 @@ def collect_all() -> list[dict]:
 
     artworks_out = []
     fallbacks_used = []
+
+    # Museum overview first (no Louvre API call needed)
+    artworks_out.append(_collect_museum_overview(session))
 
     for artwork_id, meta in ARTWORKS.items():
         log.info("Collecting: %s", artwork_id)

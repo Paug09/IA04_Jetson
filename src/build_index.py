@@ -54,31 +54,40 @@ def _make_chunks(artwork: dict) -> list[dict]:
                 "louvre_url": a.get("louvre_url", ""),
             })
 
-    # Identity chunk — always generated, used for location / technique queries
-    identity_parts = [
-        f"{a.get('title_fr') or a.get('title_en', '?')} "
-        f"({a.get('title_en') or a.get('title_fr', '')})",
-    ]
-    if a.get("artist"):
-        identity_parts.append(f"est une œuvre de {a['artist']}")
-    if a.get("date"):
-        identity_parts.append(f"datée de {a['date']}")
-    if a.get("location"):
-        identity_parts.append(f"Elle se trouve dans {a['location']} au Musée du Louvre")
-    if a.get("technique"):
-        identity_parts.append(f"Technique : {a['technique']}")
-    if a.get("dimensions"):
-        identity_parts.append(f"Dimensions : {a['dimensions']}")
-    if a.get("department"):
-        identity_parts.append(f"Département : {a['department']}")
-    if a.get("school"):
-        identity_parts.append(f"École : {a['school']}")
-    if a.get("period"):
-        identity_parts.append(f"Période : {a['period']}")
-    if a.get("inventory_number"):
-        identity_parts.append(f"N° d'inventaire : {a['inventory_number']}")
-
-    add("identity", ". ".join(identity_parts) + ".", "fr")
+    # Identity chunk — format differs for the museum overview vs individual artworks
+    if a["id"] == "louvre_museum":
+        identity_text = (
+            "Le Musée du Louvre (Louvre Museum) est situé au Palais du Louvre, "
+            "75001 Paris, France. C'est le plus grand musée d'art du monde, "
+            "avec plus de 500 000 œuvres dont plus de 36 000 exposées. "
+            "Il est organisé en neuf départements couvrant l'art occidental, "
+            "les antiquités orientales, égyptiennes, grecques, étrusques et romaines."
+        )
+        add("identity", identity_text, "fr")
+    else:
+        identity_parts = [
+            f"{a.get('title_fr') or a.get('title_en', '?')} "
+            f"({a.get('title_en') or a.get('title_fr', '')})",
+        ]
+        if a.get("artist"):
+            identity_parts.append(f"est une œuvre de {a['artist']}")
+        if a.get("date"):
+            identity_parts.append(f"datée de {a['date']}")
+        if a.get("location"):
+            identity_parts.append(f"Elle se trouve dans {a['location']} au Musée du Louvre")
+        if a.get("technique"):
+            identity_parts.append(f"Technique : {a['technique']}")
+        if a.get("dimensions"):
+            identity_parts.append(f"Dimensions : {a['dimensions']}")
+        if a.get("department"):
+            identity_parts.append(f"Département : {a['department']}")
+        if a.get("school"):
+            identity_parts.append(f"École : {a['school']}")
+        if a.get("period"):
+            identity_parts.append(f"Période : {a['period']}")
+        if a.get("inventory_number"):
+            identity_parts.append(f"N° d'inventaire : {a['inventory_number']}")
+        add("identity", ". ".join(identity_parts) + ".", "fr")
 
     # Louvre descriptions
     add("description_fr", a.get("louvre_description_fr", ""), "fr")
