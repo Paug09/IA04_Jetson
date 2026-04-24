@@ -26,7 +26,12 @@ app = Flask(__name__)
 CORS(app)
 
 log.info("Initializing RAG pipeline ...")
-pipeline = RAGPipeline()
+try:
+    pipeline = RAGPipeline()
+except ValueError as e:
+    log.error("ChromaDB collection not found: %s", e)
+    log.error("Run `python src/build_index.py` first.")
+    sys.exit(1)
 log.info("Flask app ready.")
 
 

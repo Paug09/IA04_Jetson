@@ -58,6 +58,10 @@ class RAGPipeline:
         log.info("ChromaDB collection loaded: %d chunks", self.collection.count())
 
         self.system_prompt = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
+
+        if not self.ollama_reachable():
+            log.warning("Ollama is not reachable at %s — /chat will fail until it starts", OLLAMA_URL)
+
         log.info("RAG pipeline ready.")
 
     # ------------------------------------------------------------------
@@ -112,7 +116,7 @@ class RAGPipeline:
                     "id": aid,
                     "title_fr": meta["title_fr"],
                     "title_en": meta["title_en"],
-                    "artist": meta["artist"],
+                    "artist": meta.get("artist", ""),
                     "department": meta["department"],
                     "location": meta["location"],
                     "louvre_url": meta.get("louvre_url", ""),
@@ -152,6 +156,9 @@ class RAGPipeline:
             n_results=TOP_K_RETRIEVAL,
             include=["documents", "metadatas", "distances"],
         )
+
+        if not results["documents"] or not results["documents"][0]:
+            return []
 
         chunks = []
         for doc, meta, dist in zip(
@@ -223,10 +230,17 @@ class RAGPipeline:
                 "stop": ["<|eot_id|>", "Visiteur :", "Visitor:"],
             },
         }
+        log.info("Sending request to Ollama (model=%s, timeout=%ds) ...", OLLAMA_MODEL, LLM_TIMEOUT_SECONDS)
         r = http_requests.post(
             f"{OLLAMA_URL}/api/generate",
             json=payload,
             timeout=LLM_TIMEOUT_SECONDS,
         )
-        r.raise_for_status()
-        return r.json()["response"].strip()
+        try:
+            r.raise_for_status()
+            answer = r.json()["response"].strip()
+        except (http_requests.exceptions.HTTPError, KeyError, ValueError) as e:
+            log.error("Ollama error: %s", e)
+            raise
+        log.info("Ollama responded (%d chars)", len(answer))
+        return answer

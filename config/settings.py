@@ -29,8 +29,8 @@ MAX_HISTORY_TURNS = 3
 
 # --- Ollama inference parameters ---
 LLM_TEMPERATURE = 0.3
-LLM_NUM_CTX = 4096
-LLM_NUM_PREDICT = 512
+LLM_NUM_CTX = 2048        # use 4096 on Jetson with 3B model
+LLM_NUM_PREDICT = 200     # use 512 on Jetson with 3B model
 LLM_TIMEOUT_SECONDS = 300  # CPU inference is slow; increase if still timing out
 
 # --- Flask ---
