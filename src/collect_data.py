@@ -225,19 +225,30 @@ def _fetch_louvre_ark(ark: str, session: requests.Session) -> dict | None:
     return None
 
 
-def _search_louvre(query: str, session: requests.Session) -> str | None:
-    """Returns the ARK of the first search result, or None."""
-    url = f"{LOUVRE_BASE_URL}/recherche"
-    try:
-        r = session.get(url, params={"q": query, "output": "json"}, timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            results = data.get("results", [])
-            if results:
-                return results[0].get("ark")
-    except (requests.RequestException, json.JSONDecodeError) as e:
-        log.warning("Louvre search for '%s' failed: %s", query, e)
-    return None
+def _wikipedia_only_record(artwork_id: str, meta: dict, session: requests.Session) -> dict:
+    """Fallback when Louvre API is unavailable: Wikipedia data only."""
+    wiki = meta.get("wikipedia", {})
+    return {
+        "id": artwork_id,
+        "ark": meta["ark"],
+        "louvre_url": f"{LOUVRE_BASE_URL}/{meta['ark']}",
+        "title_fr": "",
+        "title_en": "",
+        "artist": "",
+        "date": "",
+        "technique": "",
+        "dimensions": "",
+        "department": "",
+        "location": "",
+        "school": "",
+        "period": "",
+        "inventory_number": "",
+        "acquisition": "",
+        "louvre_description_fr": "",
+        "louvre_description_en": "",
+        "wikipedia_summary_fr": _fetch_wikipedia_summary(wiki.get("fr", ""), "fr", session),
+        "wikipedia_summary_en": _fetch_wikipedia_summary(wiki.get("en", ""), "en", session),
+    }
 
 
 def _parse_louvre_record(data: dict) -> dict:
@@ -343,7 +354,6 @@ def collect_all() -> list[dict]:
     session.headers.update({"User-Agent": "IA04-Jetson-RAG/1.0 (educational project)"})
 
     artworks_out = []
-    fallbacks_used = []
 
     # Museum overview first (no Louvre API call needed)
     artworks_out.append(_collect_museum_overview(session))
@@ -356,17 +366,12 @@ def collect_all() -> list[dict]:
         time.sleep(REQUEST_DELAY_SECONDS)
 
         if data is None:
-            log.warning("  → ARK failed, trying search fallback for '%s'", meta["search_fallback"])
-            ark_found = _search_louvre(meta["search_fallback"], session)
+            log.warning("  → Louvre API unavailable for %s, using Wikipedia only", artwork_id)
+            parsed = _wikipedia_only_record(artwork_id, meta, session)
             time.sleep(REQUEST_DELAY_SECONDS)
-            if ark_found:
-                log.info("  → Found via search: %s", ark_found)
-                fallbacks_used.append({"id": artwork_id, "original_ark": meta["ark"], "found_ark": ark_found})
-                data = _fetch_louvre_ark(ark_found, session)
-                time.sleep(REQUEST_DELAY_SECONDS)
-            if data is None:
-                log.error("  → Could not retrieve Louvre data for %s, skipping", artwork_id)
-                continue
+            artworks_out.append(parsed)
+            log.info("  ✓ done (Wikipedia only — update ARK if Louvre data needed)")
+            continue
 
         parsed = _parse_louvre_record(data)
 
@@ -384,11 +389,6 @@ def collect_all() -> list[dict]:
 
         artworks_out.append(parsed)
         log.info("  ✓ done (%d fields populated)", sum(1 for v in parsed.values() if v))
-
-    if fallbacks_used:
-        log.warning("\nARK fallbacks used (update ARTWORKS dict with correct IDs):")
-        for f in fallbacks_used:
-            log.warning("  %s: %s → %s", f["id"], f["original_ark"], f["found_ark"])
 
     return artworks_out
 
